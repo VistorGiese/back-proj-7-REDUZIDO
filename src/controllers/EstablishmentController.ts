@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 import EstablishmentModel from "../models/EstablishmentModel";
 import AddressModel from '../models/AddressModel';
-import { validateEmailFormat, validatePhoneFormat } from "../services/userValidationServices";
+import { validateEmailFormat, validatePhoneFormat, validatePasswordFormat } from "../services/userValidationServices";
 
 export const createEstablishment = async (req: Request, res: Response) => {
   try {
@@ -14,14 +14,14 @@ export const createEstablishment = async (req: Request, res: Response) => {
       generos_musicais,
       horario_funcionamento_inicio,
       horario_funcionamento_fim,
-      endereco_id 
+      endereco_id,
+      senha
     } = req.body;
 
-
-
-    if (!nome_estabelecimento || !nome_dono || !email_responsavel || !celular_responsavel || !generos_musicais || !horario_funcionamento_inicio || !horario_funcionamento_fim || !endereco_id) {
-      return res.status(400).json({ error: "Preencha todos os campos obrigatórios, incluindo o endereco_id." });
+    if (!nome_estabelecimento || !nome_dono || !email_responsavel || !celular_responsavel || !generos_musicais || !horario_funcionamento_inicio || !horario_funcionamento_fim || !endereco_id || !senha) {
+      return res.status(400).json({ error: "Preencha todos os campos obrigatórios, incluindo o endereco_id e senha." });
     }
+
 
     // Validação de formato de email
     const emailError = validateEmailFormat(email_responsavel);
@@ -33,6 +33,12 @@ export const createEstablishment = async (req: Request, res: Response) => {
     const phoneError = validatePhoneFormat(celular_responsavel);
     if (phoneError) {
       return res.status(400).json({ error: phoneError });
+    }
+
+    // Validação de formato de senha
+    const senhaError = validatePasswordFormat(senha);
+    if (senhaError) {
+      return res.status(400).json({ error: senhaError });
     }
 
     const endereco = await AddressModel.findByPk(endereco_id);
@@ -56,6 +62,8 @@ export const createEstablishment = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Já existe um estabelecimento cadastrado com este e-mail." });
     }
 
+    const bcrypt = require('bcryptjs');
+    const senhaHash = await bcrypt.hash(senha, 10);
     const establishment = await EstablishmentModel.create({
       nome_estabelecimento,
       nome_dono,
@@ -64,7 +72,8 @@ export const createEstablishment = async (req: Request, res: Response) => {
       generos_musicais,
       horario_funcionamento_inicio,
       horario_funcionamento_fim,
-      endereco_id
+      endereco_id,
+      senha: senhaHash
     });
     res.status(201).json({
       nome_estabelecimento,
@@ -120,6 +129,39 @@ export const updateEstablishment = async (req: Request, res: Response) => {
     const establishment = await EstablishmentModel.findByPk(req.params.id);
     if (!establishment)
       return res.status(404).json({ error: "Estabelecimento não encontrado" });
+
+    const {
+      email_responsavel,
+      celular_responsavel,
+      senha
+    } = req.body;
+
+    // Validação de email se enviado
+    if (email_responsavel) {
+      const emailError = validateEmailFormat(email_responsavel);
+      if (emailError) {
+        return res.status(400).json({ error: emailError });
+      }
+    }
+
+    // Validação de celular se enviado
+    if (celular_responsavel) {
+      const phoneError = validatePhoneFormat(celular_responsavel);
+      if (phoneError) {
+        return res.status(400).json({ error: phoneError });
+      }
+    }
+
+    // Validação e hash de senha se enviada
+    if (senha) {
+      const senhaError = validatePasswordFormat(senha);
+      if (senhaError) {
+        return res.status(400).json({ error: senhaError });
+      }
+      const bcrypt = require('bcryptjs');
+      req.body.senha = await bcrypt.hash(senha, 10);
+    }
+
     await establishment.update(req.body);
     res.json(establishment);
   } catch (error) {

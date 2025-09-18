@@ -7,13 +7,13 @@ import BandRoutes from "./routes/BandRoutes";
 import BookingRoutes from "./routes/BookingRoutes";
 import EstablishmentRoutes from "./routes/EstablishmentRoutes";
 import BandApplicationRoutes from "./routes/BandApplicationRoutes";
+import AuthEstablishmentRoutes from "./routes/AuthEstablishmentRoutes";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
@@ -22,6 +22,7 @@ app.use("/bandas", BandRoutes);
 app.use("/estabelecimentos", EstablishmentRoutes);
 app.use("/agendamentos", BookingRoutes);
 app.use("/eventos", BandApplicationRoutes);
+app.use("/auth", AuthEstablishmentRoutes);
 
 import sequelize from "./config/database"; 
 

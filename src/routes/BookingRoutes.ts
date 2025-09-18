@@ -6,13 +6,14 @@ import {
   updateBooking,
   deleteBooking,
 } from "../controllers/BookingController";
+import { authMiddleware } from "../middleware/authmiddleware";
 
 const router = Router();
 
-router.post("/", createBooking);
+router.post("/", authMiddleware, createBooking);
 router.get("/", getBookings);
 router.get("/:id", getBookingById);
-router.put("/:id", updateBooking);
-router.delete("/:id", deleteBooking);
+router.put("/:id", authMiddleware, updateBooking);
+router.delete("/:id", authMiddleware, deleteBooking);
 
 export default router;

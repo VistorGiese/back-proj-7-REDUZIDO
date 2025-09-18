@@ -59,7 +59,6 @@ export const applyBandToBooking = async (req: Request, res: Response) => {
   }
 };
 
-// Listar todos os agendamentos
 export const getBookings = async (_req: Request, res: Response) => {
   try {
     const bookings = await BookingModel.findAll();
@@ -69,7 +68,6 @@ export const getBookings = async (_req: Request, res: Response) => {
   }
 };
 
-// Buscar agendamento por ID
 export const getBookingById = async (req: Request, res: Response) => {
   try {
     const booking = await BookingModel.findByPk(req.params.id);
@@ -81,7 +79,6 @@ export const getBookingById = async (req: Request, res: Response) => {
   }
 };
 
-// Atualizar agendamento
 export const updateBooking = async (req: Request, res: Response) => {
   try {
     const booking = await BookingModel.findByPk(req.params.id);
@@ -101,7 +98,6 @@ export const updateBooking = async (req: Request, res: Response) => {
   }
 };
 
-// Remover agendamento
 export const deleteBooking = async (req: Request, res: Response) => {
   try {
     const booking = await BookingModel.findByPk(req.params.id);

@@ -6,13 +6,14 @@ import {
   updateEstablishment,
   deleteEstablishment,
 } from "../controllers/EstablishmentController";
+import { authMiddleware } from "../middleware/authmiddleware";
 
 const router = Router();
 
 router.post("/", createEstablishment);
 router.get("/", getEstablishments);
 router.get("/:id", getEstablishmentById);
-router.put("/:id", updateEstablishment);
-router.delete("/:id", deleteEstablishment);
+router.put("/:id", authMiddleware, updateEstablishment);
+router.delete("/:id", authMiddleware, deleteEstablishment);
 
 export default router;

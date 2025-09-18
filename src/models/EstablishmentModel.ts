@@ -12,6 +12,7 @@ class EstablishmentModel extends Model {
   horario_funcionamento_inicio!: string;
   horario_funcionamento_fim!: string;
   endereco_id!: number;
+  senha!: string;
 }
 
 EstablishmentModel.init(
@@ -56,6 +57,10 @@ EstablishmentModel.init(
         model: 'enderecos',
         key: 'id',
       },
+    },
+    senha: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
   },
   {
