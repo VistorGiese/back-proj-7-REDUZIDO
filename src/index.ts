@@ -9,7 +9,11 @@ import EstablishmentRoutes from "./routes/EstablishmentRoutes";
 import BandApplicationRoutes from "./routes/BandApplicationRoutes";
 import AuthEstablishmentRoutes from "./routes/AuthEstablishmentRoutes";
 import FavoriteRoutes from "./routes/FavoriteRoutes";
-import "./models/associations"; 
+import UserRoutes from "./routes/UserRoutes";
+import BandManagementRoutes from "./routes/BandManagementRoutes";
+
+// Importar associações para garantir que sejam carregadas
+import './models/associations';
 
 dotenv.config();
 
@@ -26,6 +30,8 @@ app.use("/agendamentos", BookingRoutes);
 app.use("/eventos", BandApplicationRoutes);
 app.use("/auth", AuthEstablishmentRoutes);
 app.use("/favoritos", FavoriteRoutes);
+app.use("/users", UserRoutes);
+app.use("/band-management", BandManagementRoutes);
 
 import sequelize from "./config/database"; 
 
