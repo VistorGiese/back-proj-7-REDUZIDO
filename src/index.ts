@@ -12,7 +12,6 @@ import FavoriteRoutes from "./routes/FavoriteRoutes";
 import UserRoutes from "./routes/UserRoutes";
 import BandManagementRoutes from "./routes/BandManagementRoutes";
 
-// Importar associações para garantir que sejam carregadas
 import './models/associations';
 
 dotenv.config();
@@ -30,8 +29,8 @@ app.use("/agendamentos", BookingRoutes);
 app.use("/eventos", BandApplicationRoutes);
 app.use("/auth", AuthEstablishmentRoutes);
 app.use("/favoritos", FavoriteRoutes);
-app.use("/users", UserRoutes);
-app.use("/band-management", BandManagementRoutes);
+app.use("/usuarios", UserRoutes);
+app.use("/gerenciamento-bandas", BandManagementRoutes);
 
 import sequelize from "./config/database"; 
 
