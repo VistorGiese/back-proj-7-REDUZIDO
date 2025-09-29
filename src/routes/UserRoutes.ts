@@ -10,13 +10,12 @@ import { authMiddleware } from '../middleware/authmiddleware';
 
 const router = Router();
 
-// Rotas de autenticação
-router.post('/register', registerUser);
+
+router.post('/registro', registerUser);
 router.post('/login', loginUser);
 
-// Rotas protegidas
-router.get('/profile', authMiddleware, getUserProfile);
-router.post('/establishment-profile', authMiddleware, createEstablishmentProfile);
-router.post('/artist-profile', authMiddleware, createArtistProfile);
+router.get('/perfil', authMiddleware, getUserProfile);
+router.post('/perfil-estabelecimento', authMiddleware, createEstablishmentProfile);
+router.post('/perfil-artista', authMiddleware, createArtistProfile);
 
 export default router;
