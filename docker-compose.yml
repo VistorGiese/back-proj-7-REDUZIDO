@@ -1,65 +1,187 @@
 services:
-  # Aplicação Node.js
-  app:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+  # API Gateway
+  gateway:
+    build: ./microservices/gateway
     ports:
-      - "3000:3000"
+      - "3005:3000"
     environment:
       - NODE_ENV=development
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_NAME=toca_aqui_v4
-      - DB_USER=root
-      - DB_PASSWORD=
-      - JWT_SECRET=chave.com.br
-      - JWT_EXPIRES_IN=7d
+      - USER_SERVICE_URL=http://user-service:3001
+      - BAND_SERVICE_URL=http://band-service:3002
+      - EVENT_SERVICE_URL=http://event-service:3003
+      - SOCIAL_SERVICE_URL=http://social-service:3004
     depends_on:
-      mysql:
-        condition: service_healthy
-    volumes:
-      # Para desenvolvimento - hot reload
-      - .:/app
-      - /app/node_modules
-      - /app/dist
+      - user-service
+      - band-service
+      - event-service
+      - social-service
     networks:
-      - toca-aqui-network
+      - microservices-network
     restart: unless-stopped
 
-  # Banco de Dados MySQL
-  mysql:
+  # User Service
+  user-service:
+    build: ./microservices/user-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=user-db
+      - DB_PORT=3306
+      - DB_NAME=users_db
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - JWT_SECRET=your-jwt-secret-key-here
+    depends_on:
+      user-db:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Band Service  
+  band-service:
+    build: ./microservices/band-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=band-db
+      - DB_PORT=3306
+      - DB_NAME=bands_db
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - USER_SERVICE_URL=http://user-service:3001
+    depends_on:
+      band-db:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Event Service
+  event-service:
+    build: ./microservices/event-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=event-db
+      - DB_PORT=3306
+      - DB_NAME=events_db
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - USER_SERVICE_URL=http://user-service:3001
+      - BAND_SERVICE_URL=http://band-service:3002
+    depends_on:
+      event-db:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Social Service
+  social-service:
+    build: ./microservices/social-service
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=social-db
+      - DB_PORT=3306
+      - DB_NAME=social_db
+      - DB_USER=root
+      - DB_PASSWORD=rootpassword
+      - USER_SERVICE_URL=http://user-service:3001
+      - BAND_SERVICE_URL=http://band-service:3002
+      - EVENT_SERVICE_URL=http://event-service:3003
+    depends_on:
+      social-db:
+        condition: service_healthy
+    networks:
+      - microservices-network
+    restart: unless-stopped
+
+  # Databases
+  user-db:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: ""
-      MYSQL_DATABASE: toca_aqui_v4
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-    ports:
-      - "3307:3306"
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: users_db
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - user_db_data:/var/lib/mysql
     networks:
-      - toca-aqui-network
+      - microservices-network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
     restart: unless-stopped
 
-  # Adminer para gestão do banco (opcional)
+  band-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bands_db
+    volumes:
+      - band_db_data:/var/lib/mysql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  event-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: events_db
+    volumes:
+      - event_db_data:/var/lib/mysql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  social-db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: social_db
+    volumes:
+      - social_db_data:/var/lib/mysql
+    networks:
+      - microservices-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  # Adminer para gestão dos bancos
   adminer:
     image: adminer:4.8.1
     ports:
       - "8080:8080"
     networks:
-      - toca-aqui-network
+      - microservices-network
     restart: unless-stopped
 
 volumes:
-  mysql_data:
+  user_db_data:
+    driver: local
+  band_db_data:
+    driver: local
+  event_db_data:
+    driver: local
+  social_db_data:
     driver: local
 
 networks:
-  toca-aqui-network:
+  microservices-network:
     driver: bridge

@@ -5,5 +5,4 @@ coverage/
 .DS_Store
 *.log
 REGRAS_DESENVOLVIMENTO.md
-
 docker-implementation-plan.md
