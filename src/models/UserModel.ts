@@ -4,8 +4,8 @@ import sequelize from '../config/database';
 export interface UserAttributes {
   id?: number;
   email: string;
-  password: string;
-  name: string;
+  senha: string;
+  nome: string;
   created_at?: Date;
   updated_at?: Date;
 }
@@ -13,8 +13,8 @@ export interface UserAttributes {
 class UserModel extends Model<UserAttributes> implements UserAttributes {
   public id!: number;
   public email!: string;
-  public password!: string;
-  public name!: string;
+  public senha!: string;
+  public nome!: string;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
@@ -31,11 +31,11 @@ UserModel.init(
       allowNull: false,
       unique: true,
     },
-    password: {
+    senha: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    name: {
+    nome: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
@@ -43,7 +43,7 @@ UserModel.init(
   {
     sequelize,
     modelName: 'User',
-    tableName: 'users',
+    tableName: 'usuarios',
     timestamps: true,
     underscored: true,
   }

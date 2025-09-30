@@ -3,34 +3,34 @@ import sequelize from '../config/database';
 
 export interface EstablishmentProfileAttributes {
   id?: number;
-  user_id: number;
-  business_name: string;
-  business_type: 'bar' | 'casa_show' | 'restaurante' | 'club' | 'outro';
-  description?: string;
-  musical_genres: string;
-  opening_hours: string;
-  closing_hours: string;
-  address_id: number;
-  contact_phone: string;
-  photos?: string; // JSON string
-  is_active?: boolean;
+  usuario_id: number;
+  nome_estabelecimento: string;
+  tipo_estabelecimento: 'bar' | 'casa_show' | 'restaurante' | 'club' | 'outro';
+  descricao?: string;
+  generos_musicais: string;
+  horario_abertura: string;
+  horario_fechamento: string;
+  endereco_id: number;
+  telefone_contato: string;
+  fotos?: string; // JSON string
+  esta_ativo?: boolean;
   created_at?: Date;
   updated_at?: Date;
 }
 
 class EstablishmentProfileModel extends Model<EstablishmentProfileAttributes> implements EstablishmentProfileAttributes {
   public id!: number;
-  public user_id!: number;
-  public business_name!: string;
-  public business_type!: 'bar' | 'casa_show' | 'restaurante' | 'club' | 'outro';
-  public description?: string;
-  public musical_genres!: string;
-  public opening_hours!: string;
-  public closing_hours!: string;
-  public address_id!: number;
-  public contact_phone!: string;
-  public photos?: string;
-  public is_active!: boolean;
+  public usuario_id!: number;
+  public nome_estabelecimento!: string;
+  public tipo_estabelecimento!: 'bar' | 'casa_show' | 'restaurante' | 'club' | 'outro';
+  public descricao?: string;
+  public generos_musicais!: string;
+  public horario_abertura!: string;
+  public horario_fechamento!: string;
+  public endereco_id!: number;
+  public telefone_contato!: string;
+  public fotos?: string;
+  public esta_ativo!: boolean;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
@@ -42,40 +42,40 @@ EstablishmentProfileModel.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    user_id: {
+    usuario_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'users',
+        model: 'usuarios',
         key: 'id',
       },
     },
-    business_name: {
+    nome_estabelecimento: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    business_type: {
+    tipo_estabelecimento: {
       type: DataTypes.ENUM('bar', 'casa_show', 'restaurante', 'club', 'outro'),
       allowNull: false,
       defaultValue: 'bar',
     },
-    description: {
+    descricao: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    musical_genres: {
+    generos_musicais: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    opening_hours: {
+    horario_abertura: {
       type: DataTypes.TIME,
       allowNull: false,
     },
-    closing_hours: {
+    horario_fechamento: {
       type: DataTypes.TIME,
       allowNull: false,
     },
-    address_id: {
+    endereco_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
@@ -83,15 +83,15 @@ EstablishmentProfileModel.init(
         key: 'id',
       },
     },
-    contact_phone: {
+    telefone_contato: {
       type: DataTypes.STRING(20),
       allowNull: false,
     },
-    photos: {
+    fotos: {
       type: DataTypes.JSON,
       allowNull: true,
     },
-    is_active: {
+    esta_ativo: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
@@ -99,7 +99,7 @@ EstablishmentProfileModel.init(
   {
     sequelize,
     modelName: 'EstablishmentProfile',
-    tableName: 'establishment_profiles',
+    tableName: 'perfis_estabelecimentos',
     timestamps: true,
     underscored: true,
   }

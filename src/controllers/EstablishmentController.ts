@@ -22,13 +22,11 @@ export const createEstablishment = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Preencha todos os campos obrigatórios, incluindo o endereco_id e senha." });
     }
 
-    // Validação de formato de email
     const emailError = validateEmailFormat(email_responsavel);
     if (emailError) {
       return res.status(400).json({ error: emailError });
     }
 
-    // Validação de formato de celular
     const phoneError = validatePhoneFormat(celular_responsavel);
     if (phoneError) {
       return res.status(400).json({ error: phoneError });
@@ -134,7 +132,6 @@ export const updateEstablishment = async (req: Request, res: Response) => {
       senha
     } = req.body;
 
-    // Validação de email se enviado
     if (email_responsavel) {
       const emailError = validateEmailFormat(email_responsavel);
       if (emailError) {
@@ -142,7 +139,6 @@ export const updateEstablishment = async (req: Request, res: Response) => {
       }
     }
 
-    // Validação de celular se enviado
     if (celular_responsavel) {
       const phoneError = validatePhoneFormat(celular_responsavel);
       if (phoneError) {

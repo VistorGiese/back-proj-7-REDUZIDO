@@ -8,10 +8,10 @@ import { validateEmailFormat, validatePasswordFormat } from '../services/userVal
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { nome, email, senha } = req.body;
 
     // Validações
-    if (!name || !email || !password) {
+    if (!nome || !email || !senha) {
       return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
     }
 
@@ -20,7 +20,7 @@ export const registerUser = async (req: Request, res: Response) => {
       return res.status(400).json({ error: emailError });
     }
 
-    const passwordError = validatePasswordFormat(password);
+    const passwordError = validatePasswordFormat(senha);
     if (passwordError) {
       return res.status(400).json({ error: passwordError });
     }
@@ -32,13 +32,13 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     // Hash da senha
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(senha, 10);
 
     // Criar usuário
     const user = await UserModel.create({
-      name,
+      nome,
       email,
-      password: hashedPassword,
+      senha: hashedPassword,
     });
 
     // Gerar token
@@ -49,7 +49,7 @@ export const registerUser = async (req: Request, res: Response) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
+        nome: user.nome,
         email: user.email,
       },
     });
@@ -60,9 +60,9 @@ export const registerUser = async (req: Request, res: Response) => {
 
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, senha } = req.body;
 
-    if (!email || !password) {
+    if (!email || !senha) {
       return res.status(400).json({ error: 'Email e senha são obrigatórios' });
     }
 
@@ -73,12 +73,11 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     // Verificar senha
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(senha, user.senha);
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    // Gerar token
     const token = generateToken({ id: user.id, email: user.email });
 
     res.json({
@@ -86,7 +85,7 @@ export const loginUser = async (req: Request, res: Response) => {
       token,
       user: {
         id: user.id,
-        name: user.name,
+        nome: user.nome,
         email: user.email,
       },
     });
@@ -130,7 +129,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
     res.json({
       user: {
         id: user.id,
-        name: user.name,
+        nome: user.nome,
         email: user.email,
         establishment_profiles: (user as any).EstablishmentProfiles || [],
         artist_profiles: (user as any).ArtistProfiles || [],
@@ -145,35 +144,34 @@ export const createEstablishmentProfile = async (req: Request, res: Response) =>
   try {
     const userId = (req as any).user?.id;
     const {
-      business_name,
-      business_type,
-      description,
-      musical_genres,
-      opening_hours,
-      closing_hours,
-      address_id,
-      contact_phone,
+      nome_estabelecimento,
+      tipo_estabelecimento,
+      descricao,
+      generos_musicais,
+      horario_abertura,
+      horario_fechamento,
+      endereco_id,
+      telefone_contato,
     } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'Usuário não identificado' });
     }
 
-    // Validações básicas
-    if (!business_name || !musical_genres || !opening_hours || !closing_hours || !address_id || !contact_phone) {
+    if (!nome_estabelecimento || !generos_musicais || !horario_abertura || !horario_fechamento || !endereco_id || !telefone_contato) {
       return res.status(400).json({ error: 'Campos obrigatórios não preenchidos' });
     }
 
     const profile = await EstablishmentProfileModel.create({
-      user_id: userId,
-      business_name,
-      business_type: business_type || 'bar',
-      description,
-      musical_genres,
-      opening_hours,
-      closing_hours,
-      address_id,
-      contact_phone,
+      usuario_id: userId,
+      nome_estabelecimento,
+      tipo_estabelecimento: tipo_estabelecimento || 'bar',
+      descricao,
+      generos_musicais,
+      horario_abertura,
+      horario_fechamento,
+      endereco_id,
+      telefone_contato,
     });
 
     res.status(201).json({
@@ -189,13 +187,13 @@ export const createArtistProfile = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
     const {
-      stage_name,
-      bio,
-      instruments,
-      genres,
-      experience_years,
-      portfolio_url,
-      profile_photo,
+      nome_artistico,
+      biografia,
+      instrumentos,
+      generos,
+      anos_experiencia,
+      url_portfolio,
+      foto_perfil,
     } = req.body;
 
     if (!userId) {
@@ -203,19 +201,19 @@ export const createArtistProfile = async (req: Request, res: Response) => {
     }
 
     // Validações básicas
-    if (!stage_name) {
+    if (!nome_artistico) {
       return res.status(400).json({ error: 'Nome artístico é obrigatório' });
     }
 
     const profile = await ArtistProfileModel.create({
-      user_id: userId,
-      stage_name,
-      bio,
-      instruments: JSON.stringify(instruments || []),
-      genres: JSON.stringify(genres || []),
-      experience_years: experience_years || 0,
-      portfolio_url,
-      profile_photo,
+      usuario_id: userId,
+      nome_artistico,
+      biografia,
+      instrumentos: JSON.stringify(instrumentos || []),
+      generos: JSON.stringify(generos || []),
+      anos_experiencia: anos_experiencia || 0,
+      url_portfolio,
+      foto_perfil,
     });
 
     res.status(201).json({

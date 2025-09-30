@@ -3,24 +3,24 @@ import sequelize from '../config/database';
 
 export interface BandMemberAttributes {
   id?: number;
-  band_id: number;
-  artist_profile_id: number;
-  role?: string;
-  is_leader?: boolean;
+  banda_id: number;
+  perfil_artista_id: number;
+  funcao?: string;
+  e_lider?: boolean;
   status: 'pending' | 'approved' | 'rejected';
-  joined_at?: Date;
+  data_entrada?: Date;
   created_at?: Date;
   updated_at?: Date;
 }
 
 class BandMemberModel extends Model<BandMemberAttributes> implements BandMemberAttributes {
   public id!: number;
-  public band_id!: number;
-  public artist_profile_id!: number;
-  public role?: string;
-  public is_leader!: boolean;
+  public banda_id!: number;
+  public perfil_artista_id!: number;
+  public funcao?: string;
+  public e_lider!: boolean;
   public status!: 'pending' | 'approved' | 'rejected';
-  public joined_at?: Date;
+  public data_entrada?: Date;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
@@ -32,28 +32,28 @@ BandMemberModel.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    band_id: {
+    banda_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'bands',
+        model: 'bandas',
         key: 'id',
       },
     },
-    artist_profile_id: {
+    perfil_artista_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'artist_profiles',
+        model: 'perfis_artistas',
         key: 'id',
       },
     },
-    role: {
+    funcao: {
       type: DataTypes.STRING(100),
       allowNull: true,
       comment: 'Função na banda (ex: guitarrista, vocalista, baterista)',
     },
-    is_leader: {
+    e_lider: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
@@ -62,7 +62,7 @@ BandMemberModel.init(
       allowNull: false,
       defaultValue: 'pending',
     },
-    joined_at: {
+    data_entrada: {
       type: DataTypes.DATE,
       allowNull: true,
     },
@@ -70,13 +70,13 @@ BandMemberModel.init(
   {
     sequelize,
     modelName: 'BandMember',
-    tableName: 'band_members',
+    tableName: 'membros_banda',
     timestamps: true,
     underscored: true,
     indexes: [
       {
         unique: true,
-        fields: ['band_id', 'artist_profile_id'],
+        fields: ['banda_id', 'perfil_artista_id'],
         name: 'unique_band_artist_membership',
       },
     ],

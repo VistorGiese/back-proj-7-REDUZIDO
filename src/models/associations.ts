@@ -12,33 +12,33 @@ import FavoriteModel from './FavoriteModel';
 
 // Associações do novo sistema de usuários
 UserModel.hasMany(EstablishmentProfileModel, {
-  foreignKey: 'user_id',
+  foreignKey: 'usuario_id',
   as: 'EstablishmentProfiles',
 });
 
 EstablishmentProfileModel.belongsTo(UserModel, {
-  foreignKey: 'user_id',
+  foreignKey: 'usuario_id',
   as: 'User',
 });
 
 UserModel.hasMany(ArtistProfileModel, {
-  foreignKey: 'user_id',
+  foreignKey: 'usuario_id',
   as: 'ArtistProfiles',
 });
 
 ArtistProfileModel.belongsTo(UserModel, {
-  foreignKey: 'user_id',
+  foreignKey: 'usuario_id',
   as: 'User',
 });
 
 // Associações com endereços
 EstablishmentProfileModel.belongsTo(AddressModel, {
-  foreignKey: 'address_id',
+  foreignKey: 'endereco_id',
   as: 'Address',
 });
 
 AddressModel.hasMany(EstablishmentProfileModel, {
-  foreignKey: 'address_id',
+  foreignKey: 'endereco_id',
   as: 'EstablishmentProfiles',
 });
 
@@ -95,22 +95,22 @@ BandApplicationModel.belongsTo(BookingModel, {
 
 // Associações do novo sistema de bandas
 BandModel.hasMany(BandMemberModel, {
-  foreignKey: 'band_id',
+  foreignKey: 'banda_id',
   as: 'Members',
 });
 
 BandMemberModel.belongsTo(BandModel, {
-  foreignKey: 'band_id',
+  foreignKey: 'banda_id',
   as: 'Band',
 });
 
 ArtistProfileModel.hasMany(BandMemberModel, {
-  foreignKey: 'artist_profile_id',
+  foreignKey: 'perfil_artista_id',
   as: 'BandMemberships',
 });
 
 BandMemberModel.belongsTo(ArtistProfileModel, {
-  foreignKey: 'artist_profile_id',
+  foreignKey: 'perfil_artista_id',
   as: 'ArtistProfile',
 });
 

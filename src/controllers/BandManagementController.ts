@@ -7,21 +7,20 @@ import UserModel from '../models/UserModel';
 export const createBand = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
-    const { name, description, genres, artist_profile_id } = req.body;
+    const { nome_banda, descricao, generos_musicais, perfil_artista_id } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'Usuário não identificado' });
     }
 
-    if (!name || !artist_profile_id) {
+    if (!nome_banda || !perfil_artista_id) {
       return res.status(400).json({ error: 'Nome da banda e perfil de artista são obrigatórios' });
     }
 
-    // Verificar se o perfil de artista pertence ao usuário
     const artistProfile = await ArtistProfileModel.findOne({
       where: {
-        id: artist_profile_id,
-        user_id: userId,
+        id: perfil_artista_id,
+        usuario_id: userId,
       },
     });
 
@@ -31,30 +30,29 @@ export const createBand = async (req: Request, res: Response) => {
 
     // Criar a banda
     const band = await BandModel.create({
-      name,
-      description,
-      genres: JSON.stringify(genres || []),
-      is_active: true,
+      nome_banda,
+      descricao,
+      generos_musicais: JSON.stringify(generos_musicais || []),
+      esta_ativo: true,
     });
 
-    // Adicionar o criador como líder da banda
     await BandMemberModel.create({
-      band_id: band.id,
-      artist_profile_id,
-      role: 'Líder',
-      is_leader: true,
+      banda_id: band.id,
+      perfil_artista_id,
+      funcao: 'Líder',
+      e_lider: true,
       status: 'approved',
-      joined_at: new Date(),
+      data_entrada: new Date(),
     });
 
     res.status(201).json({
       message: 'Banda criada com sucesso',
       band: {
         id: band.id,
-        name: band.name,
-        description: band.description,
-        genres: JSON.parse(band.genres || '[]'),
-        is_active: band.is_active,
+        nome_banda: band.nome_banda,
+        descricao: band.descricao,
+        generos_musicais: JSON.parse(band.generos_musicais || '[]'),
+        esta_ativo: band.esta_ativo,
       },
     });
   } catch (error) {
@@ -81,7 +79,7 @@ export const getBandDetails = async (req: Request, res: Response) => {
                 {
                   model: UserModel,
                   as: 'User',
-                  attributes: ['name'],
+                  attributes: ['nome'],
                 },
               ],
             },
@@ -96,19 +94,19 @@ export const getBandDetails = async (req: Request, res: Response) => {
 
     res.json({
       id: band.id,
-      name: band.name,
-      description: band.description,
-      genres: JSON.parse(band.genres || '[]'),
-      is_active: band.is_active,
+      nome_banda: band.nome_banda,
+      descricao: band.descricao,
+      generos_musicais: JSON.parse(band.generos_musicais || '[]'),
+      esta_ativo: band.esta_ativo,
       members: (band as any).Members?.map((member: any) => ({
         id: member.id,
-        role: member.role,
-        is_leader: member.is_leader,
-        joined_at: member.joined_at,
+        funcao: member.funcao,
+        e_lider: member.e_lider,
+        data_entrada: member.data_entrada,
         artist: {
           id: member.ArtistProfile.id,
-          stage_name: member.ArtistProfile.stage_name,
-          user_name: member.ArtistProfile.User.name,
+          nome_artistico: member.ArtistProfile.nome_artistico,
+          nome_usuario: member.ArtistProfile.User.nome,
         },
       })) || [],
     });
@@ -120,24 +118,23 @@ export const getBandDetails = async (req: Request, res: Response) => {
 export const inviteMemberToBand = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
-    const { band_id, artist_profile_id, role } = req.body;
+    const { banda_id, perfil_artista_id, funcao } = req.body;
 
     if (!userId) {
       return res.status(401).json({ error: 'Usuário não identificado' });
     }
 
-    // Verificar se o usuário é líder da banda
     const userLeadership = await BandMemberModel.findOne({
       where: {
-        band_id,
-        is_leader: true,
+        banda_id,
+        e_lider: true,
         status: 'approved',
       },
       include: [
         {
           model: ArtistProfileModel,
           as: 'ArtistProfile',
-          where: { user_id: userId },
+          where: { usuario_id: userId },
         },
       ],
     });
@@ -146,10 +143,9 @@ export const inviteMemberToBand = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Apenas líderes da banda podem convidar membros' });
     }
 
-    // Verificar se a banda não está cheia (máximo 10 membros)
     const currentMembers = await BandMemberModel.count({
       where: {
-        band_id,
+        banda_id,
         status: 'approved',
       },
     });
@@ -158,11 +154,10 @@ export const inviteMemberToBand = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Banda já atingiu o limite máximo de 10 membros' });
     }
 
-    // Verificar se o artista já está na banda ou foi convidado
     const existingMembership = await BandMemberModel.findOne({
       where: {
-        band_id,
-        artist_profile_id,
+        banda_id,
+        perfil_artista_id,
       },
     });
 
@@ -170,12 +165,11 @@ export const inviteMemberToBand = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Artista já está na banda ou foi convidado' });
     }
 
-    // Criar o convite
     const invitation = await BandMemberModel.create({
-      band_id,
-      artist_profile_id,
-      role: role || 'Membro',
-      is_leader: false,
+      banda_id,
+      perfil_artista_id,
+      funcao: funcao || 'Membro',
+      e_lider: false,
       status: 'pending',
     });
 
@@ -183,9 +177,9 @@ export const inviteMemberToBand = async (req: Request, res: Response) => {
       message: 'Convite enviado com sucesso',
       invitation: {
         id: invitation.id,
-        band_id: invitation.band_id,
-        artist_profile_id: invitation.artist_profile_id,
-        role: invitation.role,
+        banda_id: invitation.banda_id,
+        perfil_artista_id: invitation.perfil_artista_id,
+        funcao: invitation.funcao,
         status: invitation.status,
       },
     });
@@ -207,7 +201,6 @@ export const respondToBandInvitation = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Ação inválida. Use "accept" ou "reject"' });
     }
 
-    // Buscar o convite
     const invitation = await BandMemberModel.findOne({
       where: {
         id: invitation_id,
@@ -217,7 +210,7 @@ export const respondToBandInvitation = async (req: Request, res: Response) => {
         {
           model: ArtistProfileModel,
           as: 'ArtistProfile',
-          where: { user_id: userId },
+          where: { usuario_id: userId },
         },
       ],
     });
@@ -226,10 +219,9 @@ export const respondToBandInvitation = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Convite não encontrado ou não pertence ao usuário' });
     }
 
-    // Atualizar o status
     if (action === 'accept') {
       invitation.status = 'approved';
-      invitation.joined_at = new Date();
+      invitation.data_entrada = new Date();
     } else {
       invitation.status = 'rejected';
     }
@@ -241,7 +233,7 @@ export const respondToBandInvitation = async (req: Request, res: Response) => {
       invitation: {
         id: invitation.id,
         status: invitation.status,
-        joined_at: invitation.joined_at,
+        data_entrada: invitation.data_entrada,
       },
     });
   } catch (error) {
@@ -259,7 +251,7 @@ export const getUserBands = async (req: Request, res: Response) => {
 
     // Buscar bandas do usuário através dos perfis de artista
     const userArtistProfiles = await ArtistProfileModel.findAll({
-      where: { user_id: userId },
+      where: { usuario_id: userId },
       include: [
         {
           model: BandMemberModel,
@@ -279,12 +271,12 @@ export const getUserBands = async (req: Request, res: Response) => {
     const bands = userArtistProfiles.flatMap((profile: any) =>
       profile.BandMemberships?.map((membership: any) => ({
         id: membership.Band.id,
-        name: membership.Band.name,
-        description: membership.Band.description,
-        genres: JSON.parse(membership.Band.genres || '[]'),
-        role: membership.role,
-        is_leader: membership.is_leader,
-        joined_at: membership.joined_at,
+        nome_banda: membership.Band.nome_banda,
+        descricao: membership.Band.descricao,
+        generos_musicais: JSON.parse(membership.Band.generos_musicais || '[]'),
+        funcao: membership.funcao,
+        e_lider: membership.e_lider,
+        data_entrada: membership.data_entrada,
       })) || []
     );
 

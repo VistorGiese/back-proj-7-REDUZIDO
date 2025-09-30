@@ -17,13 +17,11 @@ export const addFavorite = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: "Estabelecimento não identificado" });
     }
 
-    // Verificar se a banda existe
     const banda = await BandModel.findByPk(banda_id);
     if (!banda) {
       return res.status(404).json({ error: "Banda não encontrada" });
     }
 
-    // Verificar se já está nos favoritos
     const favoriteExistente = await FavoriteModel.findOne({
       where: { estabelecimento_id, banda_id }
     });
@@ -32,7 +30,7 @@ export const addFavorite = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: "Banda já está nos seus favoritos" });
     }
 
-    // Criar favorito
+    // Criar
     const favorite = await FavoriteModel.create({
       estabelecimento_id,
       banda_id

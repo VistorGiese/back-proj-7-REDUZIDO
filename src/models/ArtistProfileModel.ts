@@ -3,30 +3,30 @@ import sequelize from '../config/database';
 
 export interface ArtistProfileAttributes {
   id?: number;
-  user_id: number;
-  stage_name: string;
-  bio?: string;
-  instruments: string; // JSON array
-  genres: string; // JSON array
-  experience_years?: number;
-  portfolio_url?: string;
-  profile_photo?: string;
-  is_available?: boolean;
+  usuario_id: number;
+  nome_artistico: string;
+  biografia?: string;
+  instrumentos: string; // JSON array
+  generos: string; // JSON array
+  anos_experiencia?: number;
+  url_portfolio?: string;
+  foto_perfil?: string;
+  esta_disponivel?: boolean;
   created_at?: Date;
   updated_at?: Date;
 }
 
 class ArtistProfileModel extends Model<ArtistProfileAttributes> implements ArtistProfileAttributes {
   public id!: number;
-  public user_id!: number;
-  public stage_name!: string;
-  public bio?: string;
-  public instruments!: string;
-  public genres!: string;
-  public experience_years?: number;
-  public portfolio_url?: string;
-  public profile_photo?: string;
-  public is_available!: boolean;
+  public usuario_id!: number;
+  public nome_artistico!: string;
+  public biografia?: string;
+  public instrumentos!: string;
+  public generos!: string;
+  public anos_experiencia?: number;
+  public url_portfolio?: string;
+  public foto_perfil?: string;
+  public esta_disponivel!: boolean;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
@@ -38,46 +38,46 @@ ArtistProfileModel.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    user_id: {
+    usuario_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'users',
+        model: 'usuarios',
         key: 'id',
       },
     },
-    stage_name: {
+    nome_artistico: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    bio: {
+    biografia: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    instruments: {
+    instrumentos: {
       type: DataTypes.JSON,
       allowNull: false,
       defaultValue: '[]',
     },
-    genres: {
+    generos: {
       type: DataTypes.JSON,
       allowNull: false,
       defaultValue: '[]',
     },
-    experience_years: {
+    anos_experiencia: {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: 0,
     },
-    portfolio_url: {
+    url_portfolio: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    profile_photo: {
+    foto_perfil: {
       type: DataTypes.STRING(255),
       allowNull: true,
     },
-    is_available: {
+    esta_disponivel: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
@@ -85,7 +85,7 @@ ArtistProfileModel.init(
   {
     sequelize,
     modelName: 'ArtistProfile',
-    tableName: 'artist_profiles',
+    tableName: 'perfis_artistas',
     timestamps: true,
     underscored: true,
   }

@@ -17,8 +17,6 @@ router.use(authMiddleware);
 router.post('/', createBand);
 router.get('/minhas-bandas', getUserBands);
 router.get('/:id', getBandDetails);
-
-
 router.post('/convidar', inviteMemberToBand);
 router.post('/convite/responder', respondToBandInvitation);
 
