@@ -1,0 +1,65 @@
+services:
+  # Aplicação Node.js
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=toca_aqui_v4
+      - DB_USER=root
+      - DB_PASSWORD=
+      - JWT_SECRET=chave.com.br
+      - JWT_EXPIRES_IN=7d
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      # Para desenvolvimento - hot reload
+      - .:/app
+      - /app/node_modules
+      - /app/dist
+    networks:
+      - toca-aqui-network
+    restart: unless-stopped
+
+  # Banco de Dados MySQL
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: toca_aqui_v4
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - toca-aqui-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    restart: unless-stopped
+
+  # Adminer para gestão do banco (opcional)
+  adminer:
+    image: adminer:4.8.1
+    ports:
+      - "8080:8080"
+    networks:
+      - toca-aqui-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  toca-aqui-network:
+    driver: bridge

@@ -12,16 +12,16 @@ export const applyBandToEvent = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Evento não encontrado" });
     }
 
-    if (evento.banda_id || evento.status === "aceito") {
-      return res.status(400).json({ error: "Evento já possui banda confirmada e está fechado para novas candidaturas" });
+    if (evento.status === "aceito") {
+      return res.status(400).json({ error: "Evento já está fechado para novas candidaturas" });
     }
 
-    const candidaturaAprovada = await BandApplicationModel.findOne({
-      where: { evento_id, status: "aprovada" }
+    const candidaturaAceita = await BandApplicationModel.findOne({
+      where: { evento_id, status: "aceito" }
     });
     
-    if (candidaturaAprovada) {
-      return res.status(400).json({ error: "Evento já possui banda aprovada e está fechado para novas candidaturas" });
+    if (candidaturaAceita) {
+      return res.status(400).json({ error: "Evento já possui banda aceita e está fechado para novas candidaturas" });
     }
 
     const existente = await BandApplicationModel.findOne({
@@ -83,7 +83,7 @@ export const getBandApplicationsForEvent = async (req: Request, res: Response) =
       return res.status(404).json({ error: "Evento não encontrado" });
     }
 
-    if (evento.banda_id || evento.status === "aceito") {
+    if (evento.status === "aceito") {
       return res.json({ 
         message: "Evento fechado - já possui banda confirmada",
         candidaturas: []

@@ -4,11 +4,11 @@ import BookingModel, { BookingStatus } from "../models/BookingModel";
 
 export const createBooking = async (req: Request, res: Response) => {
   try {
-    const { titulo_evento, descricao_evento, data_show, estabelecimento_id, horario_inicio, horario_fim } = req.body;
+    const { titulo_evento, descricao_evento, data_show, perfil_estabelecimento_id, horario_inicio, horario_fim } = req.body;
     const { Op } = require('sequelize');
     const conflito = await BookingModel.findOne({
       where: {
-        estabelecimento_id,
+        perfil_estabelecimento_id,
         data_show,
         [Op.or]: [
           {
@@ -25,7 +25,7 @@ export const createBooking = async (req: Request, res: Response) => {
       titulo_evento,
       descricao_evento,
       data_show,
-      estabelecimento_id,
+      perfil_estabelecimento_id,
       horario_inicio,
       horario_fim,
       status: BookingStatus.PENDENTE,
@@ -33,29 +33,6 @@ export const createBooking = async (req: Request, res: Response) => {
     res.status(201).json(booking);
   } catch (error) {
     res.status(400).json({ error: "Erro ao criar evento", details: error });
-  }
-};
-
-export const applyBandToBooking = async (req: Request, res: Response) => {
-  try {
-    const { bookingId } = req.params;
-    const { banda_id } = req.body;
-    if (!banda_id) {
-      return res.status(400).json({ error: 'O campo banda_id é obrigatório.' });
-    }
-    const booking = await BookingModel.findByPk(bookingId);
-    if (!booking) {
-      return res.status(404).json({ error: 'Agendamento não encontrado.' });
-    }
-    if (booking.banda_id) {
-      return res.status(400).json({ error: 'Já existe uma banda associada a este agendamento.' });
-    }
-    booking.banda_id = banda_id;
-    booking.status = BookingStatus.ACEITO;
-    await booking.save();
-    res.status(200).json(booking);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao associar banda ao agendamento.' });
   }
 };
 

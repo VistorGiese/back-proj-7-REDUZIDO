@@ -7,7 +7,14 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "test": "jest"
+    "test": "jest",
+    "docker:build": "docker build -t toca-aqui .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f app",
+    "docker:restart": "docker-compose restart app",
+    "docker:shell": "docker-compose exec app sh",
+    "docker:mysql": "docker-compose exec mysql mysql -u root toca_aqui_v4"
   },
   "keywords": [],
   "author": "",

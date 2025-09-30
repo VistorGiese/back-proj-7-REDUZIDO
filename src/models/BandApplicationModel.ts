@@ -1,11 +1,18 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database';
 
+export enum ApplicationStatus {
+  PENDENTE = 'pendente',
+  ACEITO = 'aceito',
+  REJEITADO = 'rejeitado',
+  CANCELADO = 'cancelado'
+}
+
 class BandApplicationModel extends Model {
   id!: number;
   banda_id!: number;
   evento_id!: number;
-  status!: string; 
+  status!: ApplicationStatus; 
   data_aplicacao!: Date;
 }
 
@@ -32,8 +39,9 @@ BandApplicationModel.init({
     },
   },
   status: {
-    type: DataTypes.STRING,
-    defaultValue: 'pendente',
+    type: DataTypes.ENUM(...Object.values(ApplicationStatus)),
+    allowNull: false,
+    defaultValue: ApplicationStatus.PENDENTE,
   },
   data_aplicacao: {
     type: DataTypes.DATE,

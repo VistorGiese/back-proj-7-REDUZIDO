@@ -1,0 +1,61 @@
+{
+  "name": "TocaAqui Development",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/app",
+  
+  // Configurações do VS Code
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers", 
+        "automatalabs.copilot-mcp",
+        "zebradev.mcp-server-runner",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "typescript.preferences.quoteStyle": "single",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        }
+      }
+    }
+  },
+
+  // Portas a serem encaminhadas
+  "forwardPorts": [3000, 3307, 8080],
+  "portsAttributes": {
+    "3000": {
+      "label": "TocaAqui API",
+      "onAutoForward": "openPreview"
+    },
+    "3307": {
+      "label": "MySQL Database"
+    },
+    "8080": {
+      "label": "Adminer"
+    }
+  },
+
+  // Comando executado após criar o container
+  "postCreateCommand": "npm install",
+
+  // Comando executado ao iniciar o container
+  "postStartCommand": "echo 'Container TocaAqui pronto para desenvolvimento!'",
+
+  // Usuário para executar comandos
+  "remoteUser": "node",
+
+  // Manter container rodando
+  "shutdownAction": "none",
+
+  // Features adicionais
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  }
+}

@@ -7,7 +7,6 @@ import BandModel from './BandModel';
 import BandMemberModel from './BandMemberModel';
 import BookingModel from './BookingModel';
 import BandApplicationModel from './BandApplicationModel';
-import EstablishmentModel from './EstablishmentModel';
 import FavoriteModel from './FavoriteModel';
 
 // Associações do novo sistema de usuários
@@ -42,35 +41,15 @@ AddressModel.hasMany(EstablishmentProfileModel, {
   as: 'EstablishmentProfiles',
 });
 
-// Associações existentes (manter compatibilidade)
-EstablishmentModel.belongsTo(AddressModel, {
-  foreignKey: 'endereco_id',
-  as: 'Address',
+// Associações de agendamentos (eventos) com perfis de estabelecimento
+EstablishmentProfileModel.hasMany(BookingModel, {
+  foreignKey: 'perfil_estabelecimento_id',
+  as: 'Events', // Agendamentos são eventos criados pelo estabelecimento
 });
 
-AddressModel.hasMany(EstablishmentModel, {
-  foreignKey: 'endereco_id',
-  as: 'Establishments',
-});
-
-BandModel.hasMany(BookingModel, {
-  foreignKey: 'banda_id',
-  as: 'Bookings',
-});
-
-BookingModel.belongsTo(BandModel, {
-  foreignKey: 'banda_id',
-  as: 'Band',
-});
-
-EstablishmentModel.hasMany(BookingModel, {
-  foreignKey: 'estabelecimento_id',
-  as: 'Bookings',
-});
-
-BookingModel.belongsTo(EstablishmentModel, {
-  foreignKey: 'estabelecimento_id',
-  as: 'Establishment',
+BookingModel.belongsTo(EstablishmentProfileModel, {
+  foreignKey: 'perfil_estabelecimento_id',
+  as: 'EstablishmentProfile',
 });
 
 BandModel.hasMany(BandApplicationModel, {
@@ -114,25 +93,19 @@ BandMemberModel.belongsTo(ArtistProfileModel, {
   as: 'ArtistProfile',
 });
 
-// Sistema de favoritos
-FavoriteModel.belongsTo(EstablishmentModel, {
-  foreignKey: 'estabelecimento_id',
-  as: 'Establishment',
-});
+// Sistema de favoritos polimórfico (sem associações diretas)
+// FavoriteModel usa sistema polimórfico: favoritavel_tipo + favoritavel_id
+// Não precisa de associações Sequelize tradicionais
 
-EstablishmentModel.hasMany(FavoriteModel, {
-  foreignKey: 'estabelecimento_id',
+// Associações de usuários com favoritos
+UserModel.hasMany(FavoriteModel, {
+  foreignKey: 'usuario_id',
   as: 'Favorites',
 });
 
-FavoriteModel.belongsTo(BandModel, {
-  foreignKey: 'banda_id',
-  as: 'Band',
-});
-
-BandModel.hasMany(FavoriteModel, {
-  foreignKey: 'banda_id',
-  as: 'Favorites',
+FavoriteModel.belongsTo(UserModel, {
+  foreignKey: 'usuario_id',
+  as: 'User',
 });
 
 export {
@@ -144,6 +117,5 @@ export {
   BandMemberModel,
   BookingModel,
   BandApplicationModel,
-  EstablishmentModel,
   FavoriteModel,
 };

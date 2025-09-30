@@ -1,121 +1,163 @@
 import { Request, Response } from "express";
 import FavoriteModel from "../models/FavoriteModel";
-import EstablishmentModel from "../models/EstablishmentModel";
+import EstablishmentProfileModel from "../models/EstablishmentProfileModel";
+import ArtistProfileModel from "../models/ArtistProfileModel";
 import BandModel from "../models/BandModel";
-import { AuthRequest } from "../middleware/authmiddleware";
 
-export const addFavorite = async (req: AuthRequest, res: Response) => {
+export const addFavorite = async (req: Request, res: Response) => {
   try {
-    const { banda_id } = req.body;
-    const estabelecimento_id = req.user?.id;
+    const usuario_id = (req as any).user?.id;
+    const { favoritavel_tipo, favoritavel_id } = req.body;
 
-    if (!banda_id) {
-      return res.status(400).json({ error: "ID da banda é obrigatório" });
+    if (!usuario_id) {
+      return res.status(401).json({ error: "Usuário não identificado" });
     }
 
-    if (!estabelecimento_id) {
-      return res.status(401).json({ error: "Estabelecimento não identificado" });
+    if (!favoritavel_tipo || !favoritavel_id) {
+      return res.status(400).json({ error: "Tipo e ID do favorito são obrigatórios" });
     }
 
-    const banda = await BandModel.findByPk(banda_id);
-    if (!banda) {
-      return res.status(404).json({ error: "Banda não encontrada" });
+    const tiposValidos = ['perfil_estabelecimento', 'perfil_artista', 'banda'];
+    if (!tiposValidos.includes(favoritavel_tipo)) {
+      return res.status(400).json({ error: "Tipo de favorito inválido" });
     }
 
-    const favoriteExistente = await FavoriteModel.findOne({
-      where: { estabelecimento_id, banda_id }
+    // Verificar se o item existe
+    let itemExiste;
+    switch (favoritavel_tipo) {
+      case 'perfil_estabelecimento':
+        itemExiste = await EstablishmentProfileModel.findByPk(favoritavel_id);
+        break;
+      case 'perfil_artista':
+        itemExiste = await ArtistProfileModel.findByPk(favoritavel_id);
+        break;
+      case 'banda':
+        itemExiste = await BandModel.findByPk(favoritavel_id);
+        break;
+    }
+
+    if (!itemExiste) {
+      return res.status(404).json({ error: "Item não encontrado" });
+    }
+
+    const favoritoExistente = await FavoriteModel.findOne({
+      where: { usuario_id, favoritavel_tipo, favoritavel_id }
     });
 
-    if (favoriteExistente) {
-      return res.status(400).json({ error: "Banda já está nos seus favoritos" });
+    if (favoritoExistente) {
+      return res.status(400).json({ error: "Item já está nos seus favoritos" });
     }
 
-    // Criar
-    const favorite = await FavoriteModel.create({
-      estabelecimento_id,
-      banda_id
+    const favorito = await FavoriteModel.create({
+      usuario_id,
+      favoritavel_tipo,
+      favoritavel_id
     });
 
     res.status(201).json({ 
-      message: "Banda adicionada aos favoritos",
-      favorite 
+      message: "Item adicionado aos favoritos com sucesso",
+      favorito 
     });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao adicionar banda aos favoritos" });
+    res.status(500).json({ error: "Erro ao adicionar item aos favoritos" });
   }
 };
 
-export const removeFavorite = async (req: AuthRequest, res: Response) => {
+export const removeFavorite = async (req: Request, res: Response) => {
   try {
-    const { banda_id } = req.params;
-    const estabelecimento_id = req.user?.id;
+    const usuario_id = (req as any).user?.id;
+    const { favoritavel_tipo, favoritavel_id } = req.params;
 
-    if (!estabelecimento_id) {
-      return res.status(401).json({ error: "Estabelecimento não identificado" });
+    if (!usuario_id) {
+      return res.status(401).json({ error: "Usuário não identificado" });
     }
 
-    const favorite = await FavoriteModel.findOne({
-      where: { estabelecimento_id, banda_id }
+    const favorito = await FavoriteModel.findOne({
+      where: { usuario_id, favoritavel_tipo, favoritavel_id }
     });
 
-    if (!favorite) {
-      return res.status(404).json({ error: "Banda não está nos seus favoritos" });
+    if (!favorito) {
+      return res.status(404).json({ error: "Item não está nos seus favoritos" });
     }
 
-    await favorite.destroy();
+    await favorito.destroy();
 
-    res.json({ message: "Banda removida dos favoritos" });
+    res.json({ message: "Item removido dos favoritos com sucesso" });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao remover banda dos favoritos" });
+    res.status(500).json({ error: "Erro ao remover item dos favoritos" });
   }
 };
 
-export const getFavorites = async (req: AuthRequest, res: Response) => {
+export const getFavorites = async (req: Request, res: Response) => {
   try {
-    const estabelecimento_id = req.user?.id;
+    const usuario_id = (req as any).user?.id;
+    const { tipo } = req.query; // Filtrar por tipo opcional
 
-    if (!estabelecimento_id) {
-      return res.status(401).json({ error: "Estabelecimento não identificado" });
+    if (!usuario_id) {
+      return res.status(401).json({ error: "Usuário não identificado" });
     }
 
-    const favorites = await FavoriteModel.findAll({
-      where: { estabelecimento_id },
-      include: [
-        {
-          model: BandModel,
-          as: 'Band',
-          attributes: ['id', 'nome_banda', 'descricao', 'imagem']
-        }
-      ],
-      order: [['data_favoritado', 'DESC']]
+    const whereClause: any = { usuario_id };
+    if (tipo && ['perfil_estabelecimento', 'perfil_artista', 'banda'].includes(tipo as string)) {
+      whereClause.favoritavel_tipo = tipo;
+    }
+
+    const favoritos = await FavoriteModel.findAll({
+      where: whereClause,
+      order: [['data_criacao', 'DESC']]
+    });
+
+    // Buscar detalhes dos itens favoritados
+    const favoritosComDetalhes = [];
+    for (const favorito of favoritos) {
+      let detalheItem;
+      switch (favorito.favoritavel_tipo) {
+        case 'perfil_estabelecimento':
+          detalheItem = await EstablishmentProfileModel.findByPk(favorito.favoritavel_id);
+          break;
+        case 'perfil_artista':
+          detalheItem = await ArtistProfileModel.findByPk(favorito.favoritavel_id);
+          break;
+        case 'banda':
+          detalheItem = await BandModel.findByPk(favorito.favoritavel_id);
+          break;
+      }
+
+      favoritosComDetalhes.push({
+        id: favorito.id,
+        tipo: favorito.favoritavel_tipo,
+        data_criacao: favorito.data_criacao,
+        item: detalheItem
+      });
+    }
+
+    res.json({
+      message: "Lista de favoritos recuperada com sucesso",
+      total: favoritosComDetalhes.length,
+      favoritos: favoritosComDetalhes
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar favoritos" });
+  }
+};
+
+export const checkFavorite = async (req: Request, res: Response) => {
+  try {
+    const usuario_id = (req as any).user?.id;
+    const { favoritavel_tipo, favoritavel_id } = req.params;
+
+    if (!usuario_id) {
+      return res.status(401).json({ error: "Usuário não identificado" });
+    }
+
+    const favorito = await FavoriteModel.findOne({
+      where: { usuario_id, favoritavel_tipo, favoritavel_id }
     });
 
     res.json({
-      message: "Lista de bandas favoritas",
-      total: favorites.length,
-      favorites
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao buscar bandas favoritas" });
-  }
-};
-
-export const checkFavorite = async (req: AuthRequest, res: Response) => {
-  try {
-    const { banda_id } = req.params;
-    const estabelecimento_id = req.user?.id;
-
-    if (!estabelecimento_id) {
-      return res.status(401).json({ error: "Estabelecimento não identificado" });
-    }
-
-    const favorite = await FavoriteModel.findOne({
-      where: { estabelecimento_id, banda_id }
-    });
-
-    res.json({
-      isFavorite: !!favorite,
-      banda_id: Number(banda_id)
+      eh_favorito: !!favorito,
+      tipo: favoritavel_tipo,
+      item_id: Number(favoritavel_id)
     });
   } catch (error) {
     res.status(500).json({ error: "Erro ao verificar favorito" });

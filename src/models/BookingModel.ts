@@ -12,11 +12,10 @@ export enum BookingStatus {
 
 class BookingModel extends Model {
   id!: number;
-  banda_id!: number;
   titulo_evento!: string;
   descricao_evento?: string;
   data_show!: Date;
-  estabelecimento_id!: number;
+  perfil_estabelecimento_id!: number; // Atualizado para o novo sistema
   horario_inicio!: string;
   horario_fim!: string;
   status!: BookingStatus;
@@ -29,14 +28,7 @@ BookingModel.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    banda_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'bandas',
-        key: 'id',
-      },
-    },
+
     titulo_evento: {
       type: DataTypes.STRING(255),
       allowNull: false,
@@ -49,11 +41,11 @@ BookingModel.init(
       type: DataTypes.DATE,
       allowNull: false,
     },
-    estabelecimento_id: {
+    perfil_estabelecimento_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: 'estabelecimentos',
+        model: 'perfis_estabelecimentos',
         key: 'id',
       },
     },

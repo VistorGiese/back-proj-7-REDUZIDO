@@ -1,0 +1,35 @@
+# Docker
+node_modules/
+npm-debug.log*
+.npm
+.node_repl_history
+
+# Logs
+logs/
+*.log
+
+# Build outputs
+dist/
+build/
+
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.sqlite
+*.db
+
+# Temporary files
+tmp/
+temp/

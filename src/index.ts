@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import AddressRoutes from "./routes/AddressRoutes";
 import BandRoutes from "./routes/BandRoutes";
 import BookingRoutes from "./routes/BookingRoutes";
-import EstablishmentRoutes from "./routes/EstablishmentRoutes";
 import BandApplicationRoutes from "./routes/BandApplicationRoutes";
 import FavoriteRoutes from "./routes/FavoriteRoutes";
 import UserRoutes from "./routes/UserRoutes";
@@ -23,7 +22,6 @@ app.use(express.json());
 
 app.use("/enderecos", AddressRoutes);
 app.use("/bandas", BandRoutes);
-app.use("/estabelecimentos", EstablishmentRoutes);
 app.use("/agendamentos", BookingRoutes);
 app.use("/eventos", BandApplicationRoutes);
 app.use("/favoritos", FavoriteRoutes);
@@ -38,7 +36,9 @@ sequelize
   .then(() => {
     console.log("Banco de dados conectado com sucesso!");
     // Para criar as tabelas automaticamente 
-     sequelize.sync();
+     sequelize.sync().then(() => {
+       console.log("Sincronização do banco concluída!");
+     });
   })
   .catch((error) => {
     console.error("Erro ao conectar ao banco de dados:", error);
