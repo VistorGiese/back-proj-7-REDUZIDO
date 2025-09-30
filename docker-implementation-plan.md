@@ -119,58 +119,126 @@ volumes:
 
 ## 🏗️ **FASE 3: Microserviços (Futura)**
 
-### Estrutura Planejada:
+### Estrutura Planejada (Corrigida por Domínios):
 ```
 services/
-├── user-service/          # Usuários + Perfis + Auth
-├── band-service/          # Bandas + Membros
-├── booking-service/       # Agendamentos + Eventos  
-├── favorite-service/      # Favoritos
-└── gateway/              # API Gateway
+├── user-service/          # 👥 USUÁRIOS: UserController + AddressController
+│   ├── Responsabilidade: Autenticação, perfis, endereços
+│   └── DB: users_db (usuarios, perfis_*, enderecos)
+│
+├── band-service/          # 🎸 BANDAS: BandController + BandManagementController  
+│   ├── Responsabilidade: Criação, membros, gerenciamento
+│   └── DB: bands_db (bandas, membros_banda)
+│
+├── event-service/         # 🎭 EVENTOS: BookingController + BandApplicationController + ContractController
+│   ├── Responsabilidade: Eventos, aplicações, contratos
+│   └── DB: events_db (agendamentos, aplicacoes_*, contratos)
+│
+├── social-service/        # ❤️ SOCIAL: FavoriteController + CommentController
+│   ├── Responsabilidade: Favoritos, comentários, avaliações
+│   └── DB: social_db (favoritos, comentarios, ratings)
+│
+└── gateway/              # 🚪 API Gateway + Roteamento
 ```
 
-### Docker Compose Microserviços:
+### Docker Compose Microserviços (Arquitetura por Domínios):
 ```yaml
 version: '3.8'
 services:
+  # API Gateway
   gateway:
     build: ./gateway
     ports: ["3000:3000"]
-    depends_on: [user-service, band-service, booking-service]
+    depends_on: [user-service, band-service, event-service, social-service]
+    environment:
+      - USER_SERVICE_URL=http://user-service:3001
+      - BAND_SERVICE_URL=http://band-service:3002  
+      - EVENT_SERVICE_URL=http://event-service:3003
+      - SOCIAL_SERVICE_URL=http://social-service:3004
 
+  # 👥 USER SERVICE: Usuários + Perfis + Endereços
   user-service:
     build: ./services/user
-    environment: 
+    ports: ["3001:3001"]
+    environment:
       DB_HOST: mysql-users
+      PORT: 3001
     depends_on: [mysql-users]
 
+  # 🎸 BAND SERVICE: Bandas + Membros + Gerenciamento
   band-service:
     build: ./services/band  
+    ports: ["3002:3002"]
     environment:
       DB_HOST: mysql-bands
+      PORT: 3002
+      USER_SERVICE_URL: http://user-service:3001
     depends_on: [mysql-bands]
 
-  booking-service:
-    build: ./services/booking
+  # 🎭 EVENT SERVICE: Eventos + Aplicações + Contratos
+  event-service:
+    build: ./services/event
+    ports: ["3003:3003"]
     environment:
-      DB_HOST: mysql-bookings  
-    depends_on: [mysql-bookings]
+      DB_HOST: mysql-events
+      PORT: 3003
+      USER_SERVICE_URL: http://user-service:3001
+      BAND_SERVICE_URL: http://band-service:3002
+    depends_on: [mysql-events]
 
-  # Bancos separados para cada serviço
+  # ❤️ SOCIAL SERVICE: Favoritos + Comentários
+  social-service:
+    build: ./services/social
+    ports: ["3004:3004"]
+    environment:
+      DB_HOST: mysql-social
+      PORT: 3004
+      USER_SERVICE_URL: http://user-service:3001
+      BAND_SERVICE_URL: http://band-service:3002
+    depends_on: [mysql-social]
+
+  # Bancos de dados por domínio
   mysql-users:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: users_db
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - users_data:/var/lib/mysql
       
   mysql-bands:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: bands_db
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - bands_data:/var/lib/mysql
       
-  mysql-bookings:
+  mysql-events:
     image: mysql:8.0  
     environment:
-      MYSQL_DATABASE: bookings_db
+      MYSQL_DATABASE: events_db
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - events_data:/var/lib/mysql
+
+  mysql-social:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: social_db
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - social_data:/var/lib/mysql
+
+volumes:
+  users_data:
+  bands_data:
+  events_data:
+  social_data:
 ```
 
 ---
